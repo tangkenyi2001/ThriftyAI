@@ -31,7 +31,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "react": "react-scripts start",
-    "server": "nodemon backend/server.js"
+    "server": "nodemon src/backend/server.js"
   },
   "eslintConfig": {
     "extends": [
