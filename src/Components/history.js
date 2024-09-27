@@ -14,6 +14,7 @@ function formatDate(dateString) {
     };
     return date.toLocaleString('en-US', options);
 }
+const PORT = process.env.PORT || 5000;
 function History(){
     const [history, setHistory] = useState([]);
     function loadDB(){
@@ -31,7 +32,14 @@ function History(){
             console.error('Error loading history:', error);
         });
     }
+    const handleResetClick = () => {
+        const confirmClear = window.confirm("Are you sure you want to clear the history?");
+        if (confirmClear) {
+            resetDB();
+        }
+    };
     function resetDB(){
+        
         fetch(`http://127.0.0.1:5000/resetdb`, {
             method: 'DELETE', // Use DELETE method
         })
@@ -49,35 +57,91 @@ function History(){
             console.error('Error resetting database:', error);
         });
     }
-    
+    function generatepdf() {
+        fetch(`http://127.0.0.1:5000/generatepdf`, {
+            method: 'GET',
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob(); // Expect a binary response (PDF)
+        })
+        .then((blob) => {
+            // Create a URL for the blob object
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'entries.pdf'); // Name for the downloaded file
+            document.body.appendChild(link);
+            link.click(); // Trigger the download
+            link.parentNode.removeChild(link); // Clean up
+        })
+        .catch((error) => {
+            console.error('Error generating PDF:', error);
+        });
+    }
 
     return(
         <>
-            <Flex flexDirection={'column'} height={'70vh'} border={'1px solid #ccc'} width={'20%'} margin={'0 auto'} marginTop={'10vh'} border={'InactiveBorder'}>
-            <Flex paddingLeft={'2vw'} flexDirection={'column'} height={'70vh'} overflowY={'scroll'} border={'1px solid #ccc'} padding={'1vw'} width={'100%'}bg={'#f0f0f0'}borderRadius={'0px'}>
-                    History 
-                    <br/>Sorted by Most Recent
+            <Flex marginTop={'5vh'} marginBottom={'5vh'} flexDirection={'column'} height={'85vh'} border={'1px solid #ccc'} width={'20%'} >
+                <Flex bg={'#adBBDA'} flexDirection={'column'} justifyContent={'center'}padding={'10px'}>
+                    <Text>History</Text>
+                    <Box>Sorted by Most Recent</Box>
+                </Flex>
+            <Flex paddingLeft={'2vw'} flexDirection={'column'} height={'100%'} overflowY={'scroll'}  padding={'1vw'} width={'100%'} bg={'#f0f0f0'}>
                     {history.map((item, index) => (
                         <>
                             <React.Fragment key={item.createdAt}>
-                            <Text marginBottom={'1vh'}>
+                            <Text marginBottom={'1vh'} width={'100%'}>
                                 {index + 1}. {formatDate(item.createdAt)}
                             </Text>
                             <Text marginBottom={'1vh'}>
-                                <Flex borderRadius={'10px'}bg={'#003135'} justifyContent={'center'}>
+                                <Flex bg={'#003135'} justifyContent={'center'}>
                                     <Text color={'white'}>User</Text>
                                 </Flex>
-                                 <Box border={'1px solid black'} borderRadius={'10px'}paddingLeft={'1vw'}>
-                                 <ReactMarkdown>{item.request}</ReactMarkdown>
+                                 <Box bg={'#003135'} textColor={'white'}paddingLeft={'1vw'}>
+                                 <ReactMarkdown components={{
+                                    pre: ({ node, ...props }) => (
+                                        <Box as="pre" whiteSpace="pre-wrap" {...props} />
+                                    ),
+                                    code: ({ node, ...props }) => (
+                                        <Box as="code" whiteSpace="pre-wrap" {...props} />
+                                    )
+                                }}
+                                    >{item.request}</ReactMarkdown>
                                  </Box>
                                 
                             </Text>
                             <Text marginBottom={'1vh'}>
-                                <Flex borderRadius={'10px'}bg={'#afdde5'} justifyContent={'center'}>
+                                <Flex bg={'#afdde5'} justifyContent={'center'}>
                                     <Text>Chatgpt</Text>
                                 </Flex>
-                                <Box border={'1px solid black'}borderRadius={'10px'}paddingLeft={'1vw'}>
-                                <ReactMarkdown>{item.response}</ReactMarkdown>
+                                <Box bg={'#afdde5'} paddingLeft={'1vw'}>
+                                <ReactMarkdown components={{
+            pre: ({ node, ...props }) => (
+              <Box
+                as="pre"
+                bg="gray.800"
+                color="green.300"
+                padding="1em"
+                borderRadius="md"
+                overflowX="auto"
+                whiteSpace="pre-wrap"
+                {...props}
+              />
+            ),
+            code: ({ node, inline, ...props }) => (
+              <Box
+                as="code"
+                bg={inline ? "gray.700" : "gray.800"}
+                color={inline ? "yellow.200" : "green.300"}
+                //padding={inline ? "0.2em" : "1em"}
+                borderRadius="md"
+                {...props}
+              />
+            ),
+          }}>{item.response}</ReactMarkdown>
                                 </Box>
                             </Text>
                             <Divider orientation='horizontal' />
@@ -88,9 +152,10 @@ function History(){
                     ))} 
                     
             </Flex>
-            <Flex bg={'#024950'} justifyContent={'space-evenly'}>
+            <Flex justifyContent={'space-evenly'}>
             <Button colorScheme={'red'} onClick={()=>loadDB()}>Load History</Button>
-            <Button colorScheme={'green'} onClick={()=>resetDB()}>Clear History</Button>
+            <Button colorScheme={'green'} onClick={()=>handleResetClick()}>Clear History</Button>
+            <Button colorScheme={'blue'} onClick={()=>generatepdf()}>Generate PDF</Button>
             </Flex>
             
             </Flex> 

@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
-import { OpenAI} from "openai";
+import {OpenAI} from "openai";
 import {config} from "dotenv";
 import connectDB from "./database.js";
 import Entry from "../models/entry.js";
+import PDFDocument from 'pdfkit';
+
 config();
 const app=express();
 
@@ -24,6 +26,7 @@ app.post('/chatgpt', async (request, response) => { // Mark the callback as asyn
         const responseData = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [{ role: "user", content: text }],
+            
         });
 
         // Prepare the response data to send
@@ -47,6 +50,38 @@ app.post('/chatgpt', async (request, response) => { // Mark the callback as asyn
     }
     }
 );
+app.get('/generatepdf', async (req, res) => {
+    try {
+        const entries = await Entry.find();  // Fetch entries from the database
+
+        // Create a new PDF Document
+        const doc = new PDFDocument();
+
+        // Pipe the document to a response to download the file
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=entries.pdf');
+        doc.pipe(res);
+
+        // Add content to the PDF
+        doc.fontSize(25).text('Entries from Database', {
+            align: 'center',
+        });
+
+        entries.forEach((entry, index) => {
+            doc.fontSize(12).text(`Entry ${index + 1}:`);
+            doc.fontSize(10).text(`Request: ${entry.request}`);
+            doc.fontSize(10).text(`Response: ${entry.response}`);
+            doc.moveDown();
+        });
+
+        // End and send the PDF
+        doc.end();
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating PDF');
+    }
+});
+
 app.get('/loadhistory', async (request, response) => {
     try {
         const entries = await Entry.find().sort({createdAt:-1}); // Fetch all entries from the database

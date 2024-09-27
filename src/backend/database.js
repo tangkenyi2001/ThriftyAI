@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 import express from "express";
 const app=express();
+import {config} from "dotenv";
+config();
 //connect to db
-const connectDB = async()=>{
-    const dbURI='mongodb+srv://User:test@ken.sifl7.mongodb.net/KenGPT?retryWrites=true&w=majority&appName=Ken';
-   
+const connectDB = async()=>{   
+  const dbURI=process.env.dbURI
     try {
       await mongoose.connect(dbURI, {
         useNewUrlParser: true,
