@@ -2,12 +2,13 @@ import Chat from"./Components/chat.js"
 import { Button,ChakraProvider, Flex, theme } from "@chakra-ui/react";
 import History from "./Components/history.js";
 import React, { useState } from 'react';
+
 function App() {
   const [history,setHistory]=useState(false)
   const [view,setView]=useState('View History')
   function viewHistory() {
     setHistory(prevHistory => !prevHistory);
-    setView(prevView=>(prevView==='View History'?'Hide History' : 'Show History'));
+    setView(prevView=>(prevView==='View History'?'Hide History' : 'View History'));
   }
   return (
     <ChakraProvider theme={theme}>

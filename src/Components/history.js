@@ -153,9 +153,9 @@ function History(){
                     
             </Flex>
             <Flex justifyContent={'space-evenly'}>
-            <Button colorScheme={'red'} onClick={()=>loadDB()}>Load History</Button>
-            <Button colorScheme={'green'} onClick={()=>handleResetClick()}>Clear History</Button>
-            <Button colorScheme={'blue'} onClick={()=>generatepdf()}>Generate PDF</Button>
+            <Button fontSize={'1vw'} colorScheme={'red'} onClick={()=>loadDB()}>Load History</Button>
+            <Button fontSize={'1vw'} colorScheme={'green'} onClick={()=>handleResetClick()}>Clear History</Button>
+            <Button fontSize={'1vw'} colorScheme={'blue'} onClick={()=>generatepdf()}>Generate PDF</Button>
             </Flex>
             
             </Flex> 

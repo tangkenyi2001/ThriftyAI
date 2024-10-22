@@ -20,17 +20,19 @@ app.listen(PORT, () => {
 
 const openai = new OpenAI();
 
-app.post('/chatgpt', async (request, response) => { // Mark the callback as async
+app.post('/chatgpt', async (request, response) => {
     const text = request.body.text;
     try {
         const responseData = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: request.body.model||"o1-mini",
             messages: [{ role: "user", content: text }],
-            
         });
 
         // Prepare the response data to send
         const replyMessage = responseData.choices[0].message;
+
+        // Send the response to the client immediately
+        response.json(replyMessage);
 
         // Create a new database entry
         const entry = new Entry({
@@ -38,18 +40,22 @@ app.post('/chatgpt', async (request, response) => { // Mark the callback as asyn
             response: replyMessage.content,
         });
 
-        // Save to the database
-        await entry.save();
-        console.log('Entry saved to db', entry);
+        // Save to the database without blocking the response
+        await entry.save()
+            .then(() => {
+                console.log('Entry saved to db', entry);
+            })
+            .catch((error) => {
+                console.error('Error saving entry to db:', error); // Log the error for debugging
+                // You might want to handle errors here but avoid impacting the client response
+            });
 
-        // Send the response to the client
-        response.json(replyMessage);
     } catch (error) {
         console.error('Error:', error); // Log the error for debugging
         response.status(500).json({ error: error.message }); // Handle any errors
     }
-    }
-);
+});
+
 app.get('/generatepdf', async (req, res) => {
     try {
         const entries = await Entry.find();  // Fetch entries from the database
