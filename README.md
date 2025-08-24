@@ -1,4 +1,4 @@
-# Getting Started with Ken-GPT
+# Getting Started with ThriftyAI
 Cost-Efficient ChatGPT API Wrapper
 
 A lightweight, customizable ChatGPT-powered assistant designed to reduce usage costs by using large language model (LLM) API instead of their ChatGPT website. This tool helps teams or individuals integrate conversational AI while keeping token usage and compute expenses under control, making it ideal for people on a budget.
